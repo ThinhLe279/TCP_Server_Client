@@ -42,12 +42,14 @@ public:
     int update_total_client(int num);
 
     // functions
-    int Create_server_fd(void);                            // function to create server's socket
-    int Set_server_addr(void);                             // function to set address for server
-    int Binding_server(void);                              // function to bind socket to localhost
-    int Add_socket_to_socket_set(fd_set *set, int &maxFD); // function to add client's socket to socket_set
-    int Accept_incoming_connection(void);                  // funtion to accept new connection
-    void Print_clients_socket(void);                       // function to print all clients socket
+    int Create_server_fd(void);                                          // function to create server's socket
+    int Set_server_addr(void);                                           // function to set address for server
+    int Binding_server(void);                                            // function to bind socket to localhost
+    int Add_socket_to_socket_set(fd_set *set, int &maxFD);               // function to add client's socket to socket_set
+    int Accept_incoming_connection(void);                                // funtion to accept new connection
+    int Disconnect_client(int pos);                                      // function to disconnect, close a client's socket
+    int Receive_and_echo_message(int sockID, char *buff, int byte_read); // function to receive and echo message to client
+    void Print_clients_socket(void);                                     // function to print all clients socket
 };
 
 #endif

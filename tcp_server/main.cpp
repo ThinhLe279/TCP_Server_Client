@@ -5,6 +5,7 @@ using namespace std;
 int main(void)
 {
     int maxFD;
+    int client_socket = -1;
     int activity;
     fd_set socket_set; // this is the list of file descriptors
     Server tcp_server;
@@ -58,6 +59,29 @@ int main(void)
                 error("** CANNOT ACCEPT NEW CONNECTION **\n");
             }
             tcp_server.Print_clients_socket();
+        }
+
+        // check IO operations on Clients sockets
+        for (int i = 0; i < MAX_CLI; i++)
+        {
+            client_socket = tcp_server.get_client_fd(i);
+            memset(buff, 0, BUFFER_SIZE);
+
+            if (FD_ISSET(client_socket, &socket_set))
+            {
+                int byte_read = recv(client_socket, buff, BUFFER_SIZE, 0);
+                // check if client wants to disconnect
+                if (byte_read <= 0)
+                {
+                    tcp_server.Disconnect_client(i);
+                    tcp_server.Print_clients_socket();
+                }
+                // or client wants to send message
+                else
+                {
+                    tcp_server.Receive_and_echo_message(client_socket, buff, byte_read);
+                }
+            }
         }
     }
     close(server_fd);

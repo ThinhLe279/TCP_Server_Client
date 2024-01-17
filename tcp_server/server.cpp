@@ -107,7 +107,7 @@ int Server::Accept_incoming_connection(void)
     socklen_t addr_len = sizeof(client_addr);
     // accept new client
     int new_client_fd = accept(this->get_server_fd(), (struct sockaddr *)&client_addr, &addr_len);
-
+    // check if Server now has enough Clients
     if (this->get_total_client() == MAX_CLI)
     {
         error("** TOO MANY CLIENTS **");
@@ -125,19 +125,53 @@ int Server::Accept_incoming_connection(void)
     {
         if (this->get_client_fd(i) == 0)
         {
-            this->set_client_fd(i, new_client_fd);
-            int new_total = this->get_total_client() + 1;
-            this->update_total_client(new_total);
+            this->set_client_fd(i, new_client_fd);                     // set new client fd to the list
+            this->update_total_client((this->get_total_client()) + 1); // update total clients
             break;
         }
     }
     // get Client's address;
     char client_IP[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &client_addr.sin_addr, client_IP, INET6_ADDRSTRLEN);
+    inet_ntop(AF_INET, &client_addr.sin_addr, client_IP, INET6_ADDRSTRLEN); // get the new client's IP and port
 
     cout << "--- New Client is Connected: " << client_IP << ", PORT: " << ntohs(client_addr.sin_port)
          << ", FILE DESCRIPTOR: " << new_client_fd << " ---" << endl;
     cout << "total Clients: " << this->get_total_client() << endl;
+    return 0;
+}
+
+int Server::Disconnect_client(int pos)
+{
+
+    int client_fd = this->get_client_fd(pos);
+    struct sockaddr_in client_addr;
+    socklen_t addr_len = sizeof(client_addr);
+
+    getpeername(client_fd, (struct sockaddr *)&client_addr, &addr_len); // find this client's IP and port based on fd
+
+    cout << "--- Client Disconnected ( " << inet_ntoa(client_addr.sin_addr)
+         << ", port: " << ntohs(client_addr.sin_port) << " ) ---" << endl;
+
+    close(client_fd);                                          // close connection
+    this->set_client_fd(pos, 0);                               // set 0 to the position of disconnected client in the list
+    this->update_total_client((this->get_total_client()) - 1); // update total clients
+    cout << "total Clients: " << this->get_total_client() << endl;
+    return 0;
+}
+
+int Server::Receive_and_echo_message(int sockID, char *buff, int byte_read)
+{
+    buff[byte_read] = '\0'; // add null-terminated character
+    string message(buff);
+    struct sockaddr_in sender_addr;
+    socklen_t addr_len = sizeof(sender_addr);
+
+    getpeername(sockID, (struct sockaddr *)&sender_addr, &addr_len); // fin the IP and Port of the sender
+
+    cout << "[ " << inet_ntoa(sender_addr.sin_addr) << " :: "
+         << ntohs(sender_addr.sin_port) << " ] :: " << message << endl; // print on Server's terminal
+
+    send(sockID, message.c_str(), byte_read, 0); // echo back the received message to sender
     return 0;
 }
 
