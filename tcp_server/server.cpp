@@ -161,6 +161,10 @@ int Server::Disconnect_client(int pos)
 
 int Server::Receive_and_echo_message(int sockID, char *buff, int byte_read)
 {
+    while (byte_read > 0 && (buff[byte_read - 1] == '\n' || buff[byte_read - 1] == '\r'))
+    {
+        --byte_read;
+    }
     buff[byte_read] = '\0'; // add null-terminated character
     string message(buff);
     struct sockaddr_in sender_addr;
@@ -169,9 +173,11 @@ int Server::Receive_and_echo_message(int sockID, char *buff, int byte_read)
     getpeername(sockID, (struct sockaddr *)&sender_addr, &addr_len); // fin the IP and Port of the sender
 
     cout << "[ " << inet_ntoa(sender_addr.sin_addr) << " :: "
-         << ntohs(sender_addr.sin_port) << " ] :: " << message << endl; // print on Server's terminal
+         << ntohs(sender_addr.sin_port) << " ] >> " << message << endl; // print on Server's terminal
 
-    send(sockID, message.c_str(), byte_read, 0); // echo back the received message to sender
+    size_t len = message.length();
+    message = message + to_string(len);
+    send(sockID, message.c_str(), message.length(), 0); // echo back the received message to sender
     return 0;
 }
 
