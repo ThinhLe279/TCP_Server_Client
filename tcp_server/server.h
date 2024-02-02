@@ -8,6 +8,7 @@
 #include <netinet/in.h> // htons
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <netinet/tcp.h>
 #include <map>
 
 #define MAX_CLI 10       // max clients

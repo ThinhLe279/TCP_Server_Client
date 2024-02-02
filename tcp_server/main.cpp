@@ -31,7 +31,7 @@ int main(void)
         exit(1);
     }
 
-    while (true)
+        while (true)
     {
         // reset the list of file descriptors
         FD_ZERO(&socket_set);
