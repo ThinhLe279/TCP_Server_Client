@@ -57,60 +57,31 @@ int Server::Set_server_addr(void)
     return 0;
 }
 
-int Server::Binding_server(void)
+int Server::Enable_address_port_reuse(void)
 {
+    int serverfd = this->get_server_fd();
     // Enable the reuse of local address and port
     int opt_val = 1;
-
-    // Set SO_KEEPALIVE option
-    if (setsockopt(this->get_server_fd(), SOL_SOCKET, SO_KEEPALIVE, &opt_val, sizeof(opt_val)) != 0)
-    {
-        perror("** Setsockopt SO_KEEPALIVE FAILED **");
-        return 1;
-    }
-
-    // Set SO_REUSEADDR and SO_REUSEPORT options
-    if (setsockopt(this->get_server_fd(), SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt_val, sizeof(opt_val)) != 0)
+    if (setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt_val, sizeof(opt_val)) != 0)
     {
         perror("** Setsockopt SO_REUSEADDR | SO_REUSEPORT FAILED **");
         return 1;
     }
 
-    // Set TCP_KEEPCNT (number of keepalive probes),
-    // TCP_KEEPIDLE (time before the first keepalive probe is sent),
-    // TCP_KEEPINTVL (interval between keepalive probes)
-    int keepcnt = 2;   // Number of keepalive probes
-    int keepidle = 15; // Time before the first keepalive probe is sent (in seconds)
-    int keepintvl = 5; // Interval between keepalive probes (in seconds)
+    return 0;
+}
 
-    if (setsockopt(this->get_server_fd(), IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(keepcnt)) != 0)
-    {
-        perror("** Setsockopt TCP_KEEPCNT FAILED **");
-        return 1;
-    }
-    if (setsockopt(this->get_server_fd(), IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(keepidle)) != 0)
-    {
-        perror("** Setsockopt TCP_KEEPIDLE FAILED **");
-        return 1;
-    }
-    if (setsockopt(this->get_server_fd(), IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(keepintvl)) != 0)
-    {
-        perror("** Setsockopt TCP_KEEPINTVL FAILED **");
-        return 1;
-    }
-
-    // Display the status of SO_KEEPALIVE
-    string keep_alive_status = (opt_val ? "ON" : "OFF");
-    cout << "SO_KEEPALIVE is: " << keep_alive_status << endl;
-
+int Server::Binding_server(void)
+{
+    int serverfd = this->get_server_fd();
     // Binding
-    if (bind(this->get_server_fd(), (struct sockaddr *)&this->server_addr, sizeof(this->server_addr)) < 0)
+    if (bind(serverfd, (struct sockaddr *)&this->server_addr, sizeof(this->server_addr)) < 0)
     {
         perror("** Binding FAILED **");
         return 1;
     }
     // Listen to clients
-    if (listen(this->get_server_fd(), MAX_CLI) < 0)
+    if (listen(serverfd, MAX_CLI) < 0)
     {
         perror("** Listening FAILED **");
         return 1;

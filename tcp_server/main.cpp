@@ -25,13 +25,19 @@ int main(void)
         exit(1);
     }
 
+    if (tcp_server.Enable_address_port_reuse() != 0)
+    {
+        error("Cannot Enable Keep-alive Mechanism");
+        exit(1);
+    }
+
     if (tcp_server.Binding_server() != 0)
     {
         error("*** Cannot Bind Server ***");
         exit(1);
     }
 
-        while (true)
+    while (true)
     {
         // reset the list of file descriptors
         FD_ZERO(&socket_set);

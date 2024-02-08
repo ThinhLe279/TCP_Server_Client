@@ -45,6 +45,7 @@ public:
     // functions
     int Create_server_fd(void);                                          // function to create server's socket
     int Set_server_addr(void);                                           // function to set address for server
+    int Enable_address_port_reuse(void);                                 // function to allow server to re-use the address and port when reconnect
     int Binding_server(void);                                            // function to bind socket to localhost
     int Add_socket_to_socket_set(fd_set *set, int &maxFD);               // function to add client's socket to socket_set
     int Accept_incoming_connection(void);                                // funtion to accept new connection
